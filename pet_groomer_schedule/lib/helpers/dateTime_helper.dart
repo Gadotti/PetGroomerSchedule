@@ -1,3 +1,6 @@
+import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+
 class DateTimeHelper {
 
   static String getWeekDayPortuguese(DateTime date) {
@@ -19,6 +22,10 @@ class DateTimeHelper {
       default:
         return "-";
     } 
+  }
+
+  static String dateToString(DateTime date) {
+    return DateFormat("dd/MM/yyyy").format(date);
   }
   
 }

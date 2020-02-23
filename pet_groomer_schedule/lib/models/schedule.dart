@@ -1,8 +1,11 @@
-class Schedule {
-  final String time;
-  final String task;
-  final String desc;
-  final bool isFinish;
+// import 'package:flutter/material.dart';
 
-  const Schedule(this.time, this.task, this.desc, this.isFinish);
-}
+// class Schedule {
+//   DateTime date;
+//   TimeOfDay time;
+//   String client;
+//   String task;
+//   bool isFinish;
+
+//   Schedule(this.date, this.time, this.client, this.task, this.isFinish);
+// }

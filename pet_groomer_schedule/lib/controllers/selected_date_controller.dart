@@ -20,7 +20,7 @@ abstract class SelectedDateControllerBase with Store {
 
   DateTime getDateBasedOnPageIndex(int pageIndex) {
     int index = pageIndex - _initialPageIndex;
-    print(' >> getDateBasedOnPageIndex - $index - $pageIndex - $_initialPageIndex - $_initialDate');
+    //print(' >> getDateBasedOnPageIndex - $index - $pageIndex - $_initialPageIndex - $_initialDate');
     return _initialDate.add(Duration(days: index));
   }
 
@@ -44,7 +44,7 @@ abstract class SelectedDateControllerBase with Store {
     _currentPageIndex = _initialPageIndex;
     selectedDate = seletedDirectDate;
     _initialDate = selectedDate;
-    print(' >> updateSelectedDate - $_currentPageIndex - $selectedDate - $_initialDate');
+    //print(' >> updateSelectedDate - $_currentPageIndex - $selectedDate - $_initialDate');
   }
 }
 

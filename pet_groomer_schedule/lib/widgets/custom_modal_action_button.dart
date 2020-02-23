@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:pet_groomer_schedule/widgets/custom_button.dart';
+import 'package:pet_groomer_schedule/widgets/custom_button_flat.dart';
+import 'package:pet_groomer_schedule/widgets/custom_button_raised.dart';
 
 class CustomModalActionButton extends StatelessWidget {
   final VoidCallback onClose;
@@ -12,15 +13,13 @@ class CustomModalActionButton extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: <Widget>[
-        CustomButton(
+        CustomButtonFlat(
           onPressed: onClose,
-          buttonText: "Close",
+          buttonText: 'Fechar',
         ),
-        CustomButton(
+        CustomButtonRaised(
           onPressed: onSave,
-          buttonText: "Save",
-          color: Theme.of(context).accentColor,
-          textColor: Colors.white,
+          buttonText: 'Salvar',          
         )
       ],
     );

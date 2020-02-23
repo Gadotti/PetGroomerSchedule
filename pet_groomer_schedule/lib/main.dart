@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:pet_groomer_schedule/screens/home.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:pet_groomer_schedule/pages/home.dart';
 
 void main() => runApp(MyApp());
 

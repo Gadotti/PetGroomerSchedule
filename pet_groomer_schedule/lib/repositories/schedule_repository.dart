@@ -1,18 +1,23 @@
-import 'package:pet_groomer_schedule/models/schedule.dart';
+import 'package:flutter/material.dart';
+import 'package:pet_groomer_schedule/controllers/schedule_controller.dart';
 
 class ScheduleRepository {
-
-  List<Schedule> getSchedulesList(DateTime date) {
-    final List<Schedule> _eventList = [
-      new Schedule("08:00", "Teste > Dia ${date.day}", "Menina", true),
-      new Schedule("10:00", "Banho + Hidratação", "Pépe", true),
-      new Schedule("12:00", "Banho", "Luke", false),
-      new Schedule("14:00", "Banho", "Bruce", false),
-      new Schedule("16:00", "Trimming", "Adobe", false),
-      new Schedule("18:00", "Trimming", "Adobe", false),
+  
+  Future<List<ScheduleController>> getSchedulesList(DateTime date) async {
+    final List<ScheduleController> _eventList = [
+      new ScheduleController(date, TimeOfDay(hour: 8, minute: 0), "Menina", "Teste > Dia ${date.day}", true),
+      new ScheduleController(date, TimeOfDay(hour: 10, minute: 15), "Pépe", "Banho + Hidratação", true),
+      new ScheduleController(date, TimeOfDay(hour: 12, minute: 0), "Luke", "Banho", false),
+      new ScheduleController(date, TimeOfDay(hour: 14, minute: 0), "Bruce", "Banho", false),
+      new ScheduleController(date, TimeOfDay(hour: 16, minute: 0), "Adobe", "Trimming", false),
+      new ScheduleController(date, TimeOfDay(hour: 18, minute: 0), "Adobe", "Trimming", false),
     ];
 
     return _eventList;
   }
 
+  Future update(ScheduleController schedule)
+  {
+
+  }
 }

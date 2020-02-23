@@ -3,7 +3,7 @@ import 'package:flutter_mobx/flutter_mobx.dart';
 import 'package:pet_groomer_schedule/controllers/initial_date_controller.dart';
 import 'package:pet_groomer_schedule/controllers/selected_date_controller.dart';
 import 'package:pet_groomer_schedule/helpers/dateTime_helper.dart';
-import 'package:pet_groomer_schedule/widgets/schedules_page.dart';
+import 'package:pet_groomer_schedule/pages/schedule/schedules_page.dart';
 
 class Home extends StatelessWidget {
 
@@ -132,7 +132,7 @@ class Home extends StatelessWidget {
         key: PageStorageKey<String>('PageView_${_initialDateController.initialDate.toString()}'), 
         pageSnapping: true,
         onPageChanged: (pageIndex) {
-          print('> Evento "onPageChanged" ');
+          //print('> Evento "onPageChanged" ');
           _selectedDateController.slideDate(pageIndex);
         },
         controller: _pageViewController,
