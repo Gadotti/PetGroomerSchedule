@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_mobx/flutter_mobx.dart';
 import 'package:pet_groomer_schedule/controllers/initial_date_controller.dart';
+import 'package:pet_groomer_schedule/controllers/schedule_controller.dart';
 import 'package:pet_groomer_schedule/controllers/selected_date_controller.dart';
 import 'package:pet_groomer_schedule/helpers/dateTime_helper.dart';
 import 'package:pet_groomer_schedule/pages/schedule/schedules_page.dart';
+import 'package:pet_groomer_schedule/repositories/schedule_repository.dart';
 
 class Home extends StatelessWidget {
 
@@ -11,6 +13,7 @@ class Home extends StatelessWidget {
   final _pageViewController = PageController(initialPage: _initialPageIndex, keepPage: false); 
   final _initialDateController = InitialDateController(DateTime.now());
   final _selectedDateController = SelectedDateController(_initialPageIndex, DateTime.now());
+  final globalScaffoldKey = GlobalKey<ScaffoldState>();
 
   Future _pickDate(BuildContext context) async {
     DateTime datepick = await showDatePicker(
@@ -38,6 +41,7 @@ class Home extends StatelessWidget {
   Widget build(BuildContext context) {
     print('> Buildou a tela...');
     return Scaffold(
+      key: globalScaffoldKey,
       body: Stack(
         children: <Widget>[          
           Container(
@@ -82,7 +86,19 @@ class Home extends StatelessWidget {
         ],
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {},
+        onPressed: () async {
+          var schedule = ScheduleController();
+          schedule.date = DateTime.now();
+          schedule.time = TimeOfDay(hour: 15, minute: 30);
+          schedule.task = 'Novo teste';
+          schedule.client = 'Client novo';
+          schedule.isFinish = false;
+
+          var repo = ScheduleRepository();
+          var newId = await repo.insert(schedule);
+
+          print('Id criado: $newId');
+        },
         child: Icon(Icons.add),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
@@ -139,7 +155,7 @@ class Home extends StatelessWidget {
         itemBuilder: (context, index) {
           DateTime datePicked = _selectedDateController.getDateBasedOnPageIndex(index);
           print('> Evento "itemBuilder". Day ${datePicked.day} ');
-          return SchedulePage(datePicked);
+          return SchedulePage(datePicked, globalScaffoldKey);
         }
       ),
     );

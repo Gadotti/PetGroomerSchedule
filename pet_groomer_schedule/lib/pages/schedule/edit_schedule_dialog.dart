@@ -10,7 +10,6 @@ import 'package:pet_groomer_schedule/widgets/custom_time_picker.dart';
 
 
 class EditScheduleDialog extends StatelessWidget {
-  EditScheduleDialog(this._schedule);
 
   final ScheduleController _schedule;
   // final _textClientControler = TextEditingController();
@@ -19,6 +18,8 @@ class EditScheduleDialog extends StatelessWidget {
   final _textTimeControler = TextEditingController();
   // final _switchFinishController = LabeledSwitchController();
 
+  EditScheduleDialog(this._schedule);
+  
   @override
   Widget build(BuildContext context) {
 

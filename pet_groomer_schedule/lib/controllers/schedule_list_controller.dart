@@ -3,7 +3,6 @@
 
 import 'package:mobx/mobx.dart';
 import 'package:pet_groomer_schedule/controllers/schedule_controller.dart';
-import 'package:pet_groomer_schedule/models/schedule.dart';
 
 part 'schedule_list_controller.g.dart'; 
 
@@ -13,12 +12,20 @@ abstract class ScheduleListControllerBase with Store {
   @observable
   ObservableList<ScheduleController> schedulesList;
   
-  ScheduleListControllerBase(this.schedulesList); //.asObservable();
+  // ScheduleListControllerBase(this.schedulesList); //.asObservable();
+  ScheduleListControllerBase(List<ScheduleController> list) {
+    schedulesList = list.asObservable();
+  }
 
   @action
   void add(ScheduleController newSchedule) {
     // final _scheduleController = ScheduleController(newSchedule);
     // schedulesList.add(_scheduleController);
     schedulesList.add(newSchedule);
+  }
+
+  @action
+  void delete(ScheduleController removedSchedule) {
+    schedulesList.remove(removedSchedule);
   }
 }

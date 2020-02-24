@@ -1,23 +1,39 @@
 import 'package:flutter/material.dart';
 import 'package:pet_groomer_schedule/controllers/schedule_controller.dart';
+import 'package:pet_groomer_schedule/helpers/dateTime_helper.dart';
+import 'package:pet_groomer_schedule/models/schedule_model.dart';
+
+import 'custom_database_factory.dart';
 
 class ScheduleRepository {
   
   Future<List<ScheduleController>> getSchedulesList(DateTime date) async {
-    final List<ScheduleController> _eventList = [
-      new ScheduleController(date, TimeOfDay(hour: 8, minute: 0), "Menina", "Teste > Dia ${date.day}", true),
-      new ScheduleController(date, TimeOfDay(hour: 10, minute: 15), "Pépe", "Banho + Hidratação", true),
-      new ScheduleController(date, TimeOfDay(hour: 12, minute: 0), "Luke", "Banho", false),
-      new ScheduleController(date, TimeOfDay(hour: 14, minute: 0), "Bruce", "Banho", false),
-      new ScheduleController(date, TimeOfDay(hour: 16, minute: 0), "Adobe", "Trimming", false),
-      new ScheduleController(date, TimeOfDay(hour: 18, minute: 0), "Adobe", "Trimming", false),
-    ];
 
-    return _eventList;
+    final db = await CustomDatabaseFactory().db;
+    final listMap = await db.query(
+      ScheduleModel.tableName,
+      where: "${ScheduleModel.dateColumn} = ?",
+      whereArgs: [DateTimeHelper.dateTimeToEpoch(date)]);
+    final schduleList = List<ScheduleController>();
+
+    for (Map map in listMap) {
+      schduleList.add(ScheduleControllerBase.fromMap(map));
+    }
+
+    return schduleList;
   }
 
-  Future update(ScheduleController schedule)
-  {
+  Future<int> insert(ScheduleController schedule) async {
+    final db = await CustomDatabaseFactory().db;
+    return await db.insert(ScheduleModel.tableName, schedule.toMap());
+  }
 
+  Future<int> delete(int id) async {
+    final db = await CustomDatabaseFactory().db;
+    return await db.delete(
+      ScheduleModel.tableName,
+      where: "${ScheduleModel.idColumn} = ?",
+      whereArgs: [id]
+    );
   }
 }
