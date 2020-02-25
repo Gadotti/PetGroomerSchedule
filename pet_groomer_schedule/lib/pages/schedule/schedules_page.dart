@@ -8,49 +8,21 @@ import 'package:pet_groomer_schedule/repositories/schedule_repository.dart';
 import 'package:pet_groomer_schedule/widgets/custom_icon_decoration.dart';
 
 class SchedulePage extends StatelessWidget {
-
   final _scheduleRepository = ScheduleRepository();
-  final DateTime _selectedDate;
+  final DateTime selectedDate;
   final GlobalKey<ScaffoldState> globalScaffoldKey;
-  ScheduleListController _scheduleListController;
 
-  SchedulePage(this._selectedDate, this.globalScaffoldKey);
-
-  Future<void> _deleteSchedule(ScheduleController schedule) async {
-    final rowsAffected = await _scheduleRepository.delete(schedule.id);
-
-    if (rowsAffected > 0) {
-      _scheduleListController.delete(schedule);
-      
-      globalScaffoldKey.currentState.showSnackBar(
-        SnackBar(
-          duration: Duration(seconds: 2),
-          content: Text('Agendamento excluído!'),
-          action: SnackBarAction(
-            label: 'Desfazer',
-            onPressed: () {}, 
-          ),
-        )
-      );
-    } else {
-      globalScaffoldKey.currentState.showSnackBar(
-        SnackBar(
-          duration: Duration(seconds: 2),
-          content: Text('Erro ao realizar exclusão!')
-        )
-      ); 
-    }
-  }
+  SchedulePage(this.selectedDate, this.globalScaffoldKey);
 
   @override
   Widget build(BuildContext context) {
     //print(' >> build schedule page - date ${_selectedDate.day}');
     
     return FutureBuilder<List>(
-      future: _scheduleRepository.getSchedulesList(_selectedDate),
+      future: _scheduleRepository.getSchedulesList(selectedDate),
       builder: (context, snapshot) {
         if (snapshot.hasError) {
-          print(' > snapshot.hasError: ${snapshot.error.toString()}');
+          // print(' > snapshot.hasError: ${snapshot.error.toString()}');
           
           return Center(
             child: Column(
@@ -64,12 +36,12 @@ class SchedulePage extends StatelessWidget {
         }
 
         if (!snapshot.hasData) {
-          print(' > !snapshot.hasData');
+          //print(' > !snapshot.hasData');
           return Center(
             child: CircularProgressIndicator(),
           );
         } else {
-          print(' > _buildListView');
+          // print(' > _buildListView');
           if (snapshot.data.length > 0) {
             return _buildListView(context, snapshot.data);
           }
@@ -90,15 +62,14 @@ class SchedulePage extends StatelessWidget {
   }
 
   Widget _buildListView(BuildContext context, List<ScheduleController> scheduleList) {
-    // final _scheduleListController = ScheduleListController(scheduleList);
-    _scheduleListController = ScheduleListController(scheduleList);
+    final _scheduleListController = ScheduleListController(scheduleList);
     print(' > _buildListView main');
 
     return Observer(
       builder: (_) {
-        print(' >> items: ${_scheduleListController.schedulesList.length}');
+        print(' >> items: ${_scheduleListController.length}');
         return ListView.builder(
-          itemCount: _scheduleListController.schedulesList.length,
+          itemCount: _scheduleListController.length,
           padding: const EdgeInsets.all(0),      
           itemBuilder: (context, index) {
             return Stack(
@@ -107,9 +78,9 @@ class SchedulePage extends StatelessWidget {
                   padding: const EdgeInsets.only(left: 24.0, right: 24),
                   child: Row(
                     children: <Widget>[
-                      _displayStatus(context, index, _scheduleListController.schedulesList.length, _scheduleListController.schedulesList[index]),
+                      _displayStatus(context, index, _scheduleListController),
                       _displayTime(_scheduleListController.schedulesList[index].time.format(context)),
-                      _displayTile(context, _scheduleListController.schedulesList[index])
+                      _displayTile(context, index, _scheduleListController)
                     ],
                   ),
                 ),
@@ -129,40 +100,37 @@ class SchedulePage extends StatelessWidget {
         );
       },
     );
-
-    // return ListView.builder(
-    //   itemCount: _scheduleListController.schedulesList.length,
-    //   padding: const EdgeInsets.all(0),      
-    //   itemBuilder: (context, index) {
-    //     return Stack(
-    //       children: <Widget>[
-    //         Padding(
-    //           padding: const EdgeInsets.only(left: 24.0, right: 24),
-    //           child: Row(
-    //             children: <Widget>[
-    //               _displayStatus(context, index, _scheduleListController.schedulesList.length, _scheduleListController.schedulesList[index]),
-    //               _displayTime(_scheduleListController.schedulesList[index].time.format(context)),
-    //               _displayTile(context, _scheduleListController.schedulesList[index])
-    //             ],
-    //           ),
-    //         ),
-    //         InkResponse(
-    //           onTap: () {
-    //             _scheduleListController.schedulesList[index].isFinish = !_scheduleListController.schedulesList[index].isFinish;
-    //           },
-    //           child: Container(
-    //             width: 100,
-    //             height: 70,
-    //             margin: EdgeInsets.only(top: 15, left: 15),
-    //           ),
-    //         ),
-    //       ],
-    //     );
-    //   },
-    // );
   }
 
-  Widget _displayTile(BuildContext _mainContext, ScheduleController schedule) {
+  Widget _displayTile(BuildContext _mainContext, int index, ScheduleListController scheduleListController) {    
+    ScheduleController schedule = scheduleListController.schedulesList[index];
+
+    Future<void> _deleteSchedule(ScheduleController schedule) async {
+      final rowsAffected = await _scheduleRepository.delete(schedule.id);
+
+      if (rowsAffected > 0) {
+        scheduleListController.delete(schedule);
+        
+        globalScaffoldKey.currentState.showSnackBar(
+          SnackBar(
+            duration: Duration(seconds: 2),
+            content: Text('Agendamento excluído!'),
+            action: SnackBarAction(
+              label: 'Desfazer',
+              onPressed: () {}, 
+            ),
+          )
+        );
+      } else {
+        globalScaffoldKey.currentState.showSnackBar(
+          SnackBar(
+            duration: Duration(seconds: 2),
+            content: Text('Erro ao realizar exclusão!')
+          )
+        ); 
+      }
+    }
+
     return Expanded(      
       child: InkWell(
         customBorder: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(12))),
@@ -231,7 +199,10 @@ class SchedulePage extends StatelessWidget {
     );
   }
 
-  Widget _displayStatus(BuildContext context, int index, int listLength, ScheduleController schedule) {
+  Widget _displayStatus(BuildContext context, int index, ScheduleListController scheduleListController) {
+    int listLength = scheduleListController.length;
+    ScheduleController schedule = scheduleListController.schedulesList[index];
+    
     return Container(
         decoration: CustomIconDecoration(
             iconSize: 20,

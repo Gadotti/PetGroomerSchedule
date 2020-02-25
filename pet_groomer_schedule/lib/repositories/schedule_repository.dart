@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:pet_groomer_schedule/controllers/schedule_controller.dart';
 import 'package:pet_groomer_schedule/helpers/dateTime_helper.dart';
 import 'package:pet_groomer_schedule/models/schedule_model.dart';
@@ -8,7 +7,7 @@ import 'custom_database_factory.dart';
 class ScheduleRepository {
   
   Future<List<ScheduleController>> getSchedulesList(DateTime date) async {
-
+    print('>>> foi no banco (get)');
     final db = await CustomDatabaseFactory().db;
     final listMap = await db.query(
       ScheduleModel.tableName,

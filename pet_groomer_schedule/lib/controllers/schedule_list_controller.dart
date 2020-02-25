@@ -17,6 +17,9 @@ abstract class ScheduleListControllerBase with Store {
     schedulesList = list.asObservable();
   }
 
+  @computed
+  int get length => schedulesList.length;
+
   @action
   void add(ScheduleController newSchedule) {
     // final _scheduleController = ScheduleController(newSchedule);

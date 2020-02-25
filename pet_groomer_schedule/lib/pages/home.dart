@@ -7,6 +7,12 @@ import 'package:pet_groomer_schedule/helpers/dateTime_helper.dart';
 import 'package:pet_groomer_schedule/pages/schedule/schedules_page.dart';
 import 'package:pet_groomer_schedule/repositories/schedule_repository.dart';
 
+// class Home extends StatefulWidget {
+//   @override
+//   _HomeState createState() => _HomeState();
+// }
+
+// class _HomeState extends State<Home> {
 class Home extends StatelessWidget {
 
   static int _initialPageIndex = 30;
@@ -88,7 +94,7 @@ class Home extends StatelessWidget {
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
           var schedule = ScheduleController();
-          schedule.date = DateTime.now();
+          schedule.date = _selectedDateController.selectedDate;
           schedule.time = TimeOfDay(hour: 15, minute: 30);
           schedule.task = 'Novo teste';
           schedule.client = 'Client novo';
@@ -98,6 +104,9 @@ class Home extends StatelessWidget {
           var newId = await repo.insert(schedule);
 
           print('Id criado: $newId');
+          
+          // setState(() { 
+          // });
         },
         child: Icon(Icons.add),
       ),
@@ -126,7 +135,7 @@ class Home extends StatelessWidget {
       padding: const EdgeInsets.all(24.0),
       child: Observer(        
         builder: (_) {
-          var _selectedWeekDay = DateTimeHelper.getWeekDayPortuguese(_selectedDateController.selectedDate);
+          String _selectedWeekDay = DateTimeHelper.getWeekDayPortuguese(_selectedDateController.selectedDate);
 
           return Text(
             _selectedWeekDay,
