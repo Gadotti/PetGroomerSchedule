@@ -74,7 +74,10 @@ abstract class ScheduleControllerBase extends ScheduleModel with Store  {
   }
 
   Map toMap() {
-    print(' >> Está salvando esta data: ${DateTimeHelper.dateTimeToEpoch(date)}');
+    print(' >> Está salvando esta data: ${DateTimeHelper.dateTimeToEpoch(date)}.');    
+    print(' >> Original dia: ${date.day}.');    
+    print(' >> Convertido dia: ${DateTimeHelper.epochToDateTime(DateTimeHelper.dateTimeToEpoch(date)).day}.');    
+    print(' >> id $id.');  
     
     Map<String, dynamic> map = {
       ScheduleModel.dateColumn: DateTimeHelper.dateTimeToEpoch(date),

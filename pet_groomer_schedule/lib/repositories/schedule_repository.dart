@@ -7,7 +7,9 @@ import 'custom_database_factory.dart';
 class ScheduleRepository {
   
   Future<List<ScheduleController>> getSchedulesList(DateTime date) async {
-    print('>>> foi no banco (get)');
+    print('>>> foi no banco (get). Dia ${date.day}');
+    //await new Future.delayed(const Duration(seconds: 1));
+
     final db = await CustomDatabaseFactory().db;
     final listMap = await db.query(
       ScheduleModel.tableName,

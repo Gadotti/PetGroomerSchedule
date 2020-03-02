@@ -11,65 +11,34 @@ class SchedulePage extends StatelessWidget {
   final _scheduleRepository = ScheduleRepository();
   final DateTime selectedDate;
   final GlobalKey<ScaffoldState> globalScaffoldKey;
+  final ScheduleListController scheduleListController;
+  //final List<ScheduleController> scheduleController;
 
-  SchedulePage(this.selectedDate, this.globalScaffoldKey);
+  SchedulePage(this.selectedDate, this.scheduleListController, this.globalScaffoldKey);
 
   @override
   Widget build(BuildContext context) {
-    //print(' >> build schedule page - date ${_selectedDate.day}');
-    
-    return FutureBuilder<List>(
-      future: _scheduleRepository.getSchedulesList(selectedDate),
-      builder: (context, snapshot) {
-        if (snapshot.hasError) {
-          // print(' > snapshot.hasError: ${snapshot.error.toString()}');
-          
+    print(' >> build schedule page - date ${selectedDate.day}');
+    //final scheduleListController = ScheduleListController(scheduleController);
+
+    return Observer(
+      builder: (_) {
+        print(' >> items: ${scheduleListController.length}');
+
+        if (scheduleListController.length == 0) {
           return Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
-                Icon(Icons.error_outline),
-                Text('Ocorreu um erro ao carregar a lista.')
+                Icon(Icons.schedule),
+                Text('Nenhum agendamento para esta data.')
               ],
             )
           );
         }
-
-        if (!snapshot.hasData) {
-          //print(' > !snapshot.hasData');
-          return Center(
-            child: CircularProgressIndicator(),
-          );
-        } else {
-          // print(' > _buildListView');
-          if (snapshot.data.length > 0) {
-            return _buildListView(context, snapshot.data);
-          }
-          else {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  Icon(Icons.schedule),
-                  Text('Nenhum agendamento para esta data.')
-                ],
-              )
-            );
-          }
-        }
-      }
-    );
-  }
-
-  Widget _buildListView(BuildContext context, List<ScheduleController> scheduleList) {
-    final _scheduleListController = ScheduleListController(scheduleList);
-    print(' > _buildListView main');
-
-    return Observer(
-      builder: (_) {
-        print(' >> items: ${_scheduleListController.length}');
+        
         return ListView.builder(
-          itemCount: _scheduleListController.length,
+          itemCount: scheduleListController.length,
           padding: const EdgeInsets.all(0),      
           itemBuilder: (context, index) {
             return Stack(
@@ -78,15 +47,15 @@ class SchedulePage extends StatelessWidget {
                   padding: const EdgeInsets.only(left: 24.0, right: 24),
                   child: Row(
                     children: <Widget>[
-                      _displayStatus(context, index, _scheduleListController),
-                      _displayTime(_scheduleListController.schedulesList[index].time.format(context)),
-                      _displayTile(context, index, _scheduleListController)
+                      _displayStatus(context, index, scheduleListController),
+                      _displayTime(scheduleListController.schedulesList[index].time.format(context)),
+                      _displayTile(context, index, scheduleListController)
                     ],
                   ),
                 ),
                 InkResponse(
                   onTap: () {
-                    _scheduleListController.schedulesList[index].isFinish = !_scheduleListController.schedulesList[index].isFinish;
+                    scheduleListController.schedulesList[index].isFinish = !scheduleListController.schedulesList[index].isFinish;
                   },
                   child: Container(
                     width: 100,

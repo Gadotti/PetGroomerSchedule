@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_mobx/flutter_mobx.dart';
 import 'package:pet_groomer_schedule/controllers/initial_date_controller.dart';
 import 'package:pet_groomer_schedule/controllers/schedule_controller.dart';
+import 'package:pet_groomer_schedule/controllers/schedule_list_controller.dart';
 import 'package:pet_groomer_schedule/controllers/selected_date_controller.dart';
 import 'package:pet_groomer_schedule/helpers/dateTime_helper.dart';
 import 'package:pet_groomer_schedule/pages/schedule/schedules_page.dart';
@@ -19,7 +20,9 @@ class Home extends StatelessWidget {
   final _pageViewController = PageController(initialPage: _initialPageIndex, keepPage: false); 
   final _initialDateController = InitialDateController(DateTime.now());
   final _selectedDateController = SelectedDateController(_initialPageIndex, DateTime.now());
-  final globalScaffoldKey = GlobalKey<ScaffoldState>();
+  final _globalScaffoldKey = GlobalKey<ScaffoldState>();
+  final _scheduleRepository = ScheduleRepository();
+  final _allSchedulesListControllers = Map<int, ScheduleListController>();
 
   Future _pickDate(BuildContext context) async {
     DateTime datepick = await showDatePicker(
@@ -47,7 +50,7 @@ class Home extends StatelessWidget {
   Widget build(BuildContext context) {
     print('> Buildou a tela...');
     return Scaffold(
-      key: globalScaffoldKey,
+      key: _globalScaffoldKey,
       body: Stack(
         children: <Widget>[          
           Container(
@@ -93,20 +96,30 @@ class Home extends StatelessWidget {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
-          var schedule = ScheduleController();
+          final schedule = ScheduleController();
           schedule.date = _selectedDateController.selectedDate;
           schedule.time = TimeOfDay(hour: 15, minute: 30);
           schedule.task = 'Novo teste';
           schedule.client = 'Client novo';
           schedule.isFinish = false;
 
-          var repo = ScheduleRepository();
-          var newId = await repo.insert(schedule);
+          final repo = ScheduleRepository();
+          schedule.id = await repo.insert(schedule);
 
-          print('Id criado: $newId');
-          
-          // setState(() { 
-          // });
+          final epochDate = DateTimeHelper.dateTimeToEpoch(_selectedDateController.selectedDate);
+          var controller = _allSchedulesListControllers[epochDate];
+
+          // //Se não encontrou o controller é porque a lista esta vazia.
+          // //Criar então uma nova lista que terá o primeiro agendamento criado
+          // if (controller == null) {
+          //   List<ScheduleController> scheduleController;
+          //   final controller = ScheduleListController(scheduleController);
+          //   _allSchedulesListControllers[epochDate] = controller;            
+          // }
+
+          controller.add(schedule);
+
+          print('Id criado: ${schedule.id}. ${_selectedDateController.selectedDate.day}');
         },
         child: Icon(Icons.add),
       ),
@@ -164,7 +177,54 @@ class Home extends StatelessWidget {
         itemBuilder: (context, index) {
           DateTime datePicked = _selectedDateController.getDateBasedOnPageIndex(index);
           print('> Evento "itemBuilder". Day ${datePicked.day} ');
-          return SchedulePage(datePicked, globalScaffoldKey);
+          // return SchedulePage(datePicked, globalScaffoldKey);
+          return FutureBuilder<List>(
+            future: _scheduleRepository.getSchedulesList(datePicked),
+            builder: (context, snapshot) {
+              if (snapshot.hasError) {
+                // print(' > snapshot.hasError: ${snapshot.error.toString()}');
+                
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      Icon(Icons.error_outline),
+                      Text('Ocorreu um erro ao carregar a lista.')
+                    ],
+                  )
+                );
+              }
+
+              if (!snapshot.hasData) {
+                //print(' > !snapshot.hasData');
+                return Center(
+                  child: CircularProgressIndicator(),
+                );
+              } else {
+                // print(' > _buildListView');
+
+                int datePickedEpoch = DateTimeHelper.dateTimeToEpoch(datePicked);
+                ScheduleListController _scheduleListController;
+
+                if (_allSchedulesListControllers[datePickedEpoch] == null) {
+                  if (snapshot.data.length > 0) {
+                    _scheduleListController = ScheduleListController(snapshot.data);
+                  }
+                  else {
+                    final scheduleController = List<ScheduleController>();
+                    _scheduleListController = ScheduleListController(scheduleController);
+                  }
+
+                  _allSchedulesListControllers[datePickedEpoch] = _scheduleListController;  
+                }
+                else {
+                  _scheduleListController = _allSchedulesListControllers[datePickedEpoch];
+                }
+                
+                return SchedulePage(datePicked, _scheduleListController, _globalScaffoldKey);
+              }
+            }
+          );
         }
       ),
     );
