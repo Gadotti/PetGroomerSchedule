@@ -9,6 +9,23 @@ part of 'schedule_controller.dart';
 // ignore_for_file: non_constant_identifier_names, unnecessary_lambdas, prefer_expression_function_bodies, lines_longer_than_80_chars, avoid_as, avoid_annotating_with_dynamic
 
 mixin _$ScheduleController on ScheduleControllerBase, Store {
+  final _$idAtom = Atom(name: 'ScheduleControllerBase.id');
+
+  @override
+  int get id {
+    _$idAtom.context.enforceReadPolicy(_$idAtom);
+    _$idAtom.reportObserved();
+    return super.id;
+  }
+
+  @override
+  set id(int value) {
+    _$idAtom.context.conditionallyRunInAction(() {
+      super.id = value;
+      _$idAtom.reportChanged();
+    }, _$idAtom, name: '${_$idAtom.name}_set');
+  }
+
   final _$dateAtom = Atom(name: 'ScheduleControllerBase.date');
 
   @override
@@ -142,6 +159,16 @@ mixin _$ScheduleController on ScheduleControllerBase, Store {
     final _$actionInfo = _$ScheduleControllerBaseActionController.startAction();
     try {
       return super.setIsFinish(value);
+    } finally {
+      _$ScheduleControllerBaseActionController.endAction(_$actionInfo);
+    }
+  }
+
+  @override
+  dynamic update(ScheduleModel scheduleModel) {
+    final _$actionInfo = _$ScheduleControllerBaseActionController.startAction();
+    try {
+      return super.update(scheduleModel);
     } finally {
       _$ScheduleControllerBaseActionController.endAction(_$actionInfo);
     }

@@ -5,15 +5,11 @@ import 'package:pet_groomer_schedule/controllers/schedule_controller.dart';
 import 'package:pet_groomer_schedule/controllers/schedule_list_controller.dart';
 import 'package:pet_groomer_schedule/controllers/selected_date_controller.dart';
 import 'package:pet_groomer_schedule/helpers/dateTime_helper.dart';
+import 'package:pet_groomer_schedule/models/schedule_model.dart';
+import 'package:pet_groomer_schedule/pages/schedule/new_schedule_dialog.dart';
 import 'package:pet_groomer_schedule/pages/schedule/schedules_page.dart';
 import 'package:pet_groomer_schedule/repositories/schedule_repository.dart';
 
-// class Home extends StatefulWidget {
-//   @override
-//   _HomeState createState() => _HomeState();
-// }
-
-// class _HomeState extends State<Home> {
 class Home extends StatelessWidget {
 
   static int _initialPageIndex = 30;
@@ -41,9 +37,25 @@ class Home extends StatelessWidget {
       return;
     }
     
+    _rebuildWithSelectedDate(datepick);
+  }
+
+  void _rebuildWithSelectedDate(DateTime datepick) {
     _pageViewController.jumpToPage(_initialPageIndex);
     _selectedDateController.updateSelectedDate(datepick); 
-    _initialDateController.setInitialDate(datepick);    
+    _initialDateController.setInitialDate(datepick); 
+  }
+
+  void addSchedule(ScheduleModel schedule) {
+    if (schedule != null) {
+      final scheduleController = ScheduleControllerBase.fromModel(schedule);
+      final epochDate = DateTimeHelper.dateTimeToEpoch(schedule.date);
+      final controller = _allSchedulesListControllers[epochDate];
+
+      if (controller != null) {
+        controller.add(scheduleController);
+      }
+    }
   }
 
   @override
@@ -96,30 +108,28 @@ class Home extends StatelessWidget {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
-          final schedule = ScheduleController();
-          schedule.date = _selectedDateController.selectedDate;
-          schedule.time = TimeOfDay(hour: 15, minute: 30);
-          schedule.task = 'Novo teste';
-          schedule.client = 'Client novo';
-          schedule.isFinish = false;
+          final newScheduleModel = await showDialog<ScheduleModel>(
+            barrierDismissible: false,
+            context: context,
+            builder: (BuildContext context) {
+              return Dialog(
+                  child: NewScheduleDialog(_selectedDateController.selectedDate),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(12))
+                  )
+              );
+            }
+          );
 
-          final repo = ScheduleRepository();
-          schedule.id = await repo.insert(schedule);
+          if (newScheduleModel != null) {
+            final scheduleController = ScheduleControllerBase.fromModel(newScheduleModel);
+            final epochDate = DateTimeHelper.dateTimeToEpoch(_selectedDateController.selectedDate);
+            final controller = _allSchedulesListControllers[epochDate];
 
-          final epochDate = DateTimeHelper.dateTimeToEpoch(_selectedDateController.selectedDate);
-          var controller = _allSchedulesListControllers[epochDate];
+            controller.add(scheduleController);
 
-          // //Se não encontrou o controller é porque a lista esta vazia.
-          // //Criar então uma nova lista que terá o primeiro agendamento criado
-          // if (controller == null) {
-          //   List<ScheduleController> scheduleController;
-          //   final controller = ScheduleListController(scheduleController);
-          //   _allSchedulesListControllers[epochDate] = controller;            
-          // }
-
-          controller.add(schedule);
-
-          print('Id criado: ${schedule.id}. ${_selectedDateController.selectedDate.day}');
+            print('Id criado: ${scheduleController.id}. ${_selectedDateController.selectedDate.day}');
+          }
         },
         child: Icon(Icons.add),
       ),
@@ -177,7 +187,7 @@ class Home extends StatelessWidget {
         itemBuilder: (context, index) {
           DateTime datePicked = _selectedDateController.getDateBasedOnPageIndex(index);
           print('> Evento "itemBuilder". Day ${datePicked.day} ');
-          // return SchedulePage(datePicked, globalScaffoldKey);
+          
           return FutureBuilder<List>(
             future: _scheduleRepository.getSchedulesList(datePicked),
             builder: (context, snapshot) {
@@ -201,8 +211,6 @@ class Home extends StatelessWidget {
                   child: CircularProgressIndicator(),
                 );
               } else {
-                // print(' > _buildListView');
-
                 int datePickedEpoch = DateTimeHelper.dateTimeToEpoch(datePicked);
                 ScheduleListController _scheduleListController;
 
@@ -221,7 +229,12 @@ class Home extends StatelessWidget {
                   _scheduleListController = _allSchedulesListControllers[datePickedEpoch];
                 }
                 
-                return SchedulePage(datePicked, _scheduleListController, _globalScaffoldKey);
+                return SchedulePage(
+                  datePicked, 
+                  _scheduleListController, 
+                  _globalScaffoldKey,
+                  addSchedule
+                );
               }
             }
           );

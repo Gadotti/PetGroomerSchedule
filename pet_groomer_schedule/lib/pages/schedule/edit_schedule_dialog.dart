@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:pet_groomer_schedule/controllers/schedule_controller.dart';
 // import 'package:pet_groomer_schedule/controllers/labeled_switch_controller.dart';
 import 'package:pet_groomer_schedule/helpers/dateTime_helper.dart';
+import 'package:pet_groomer_schedule/models/schedule_model.dart';
 // import 'package:pet_groomer_schedule/models/schedule.dart';
 import 'package:pet_groomer_schedule/widgets/custom_datetime_picker.dart';
 import 'package:pet_groomer_schedule/widgets/custom_modal_action_button.dart';
@@ -11,22 +11,22 @@ import 'package:pet_groomer_schedule/widgets/custom_time_picker.dart';
 
 class EditScheduleDialog extends StatelessWidget {
 
-  final ScheduleController _schedule;
+  final ScheduleModel scheduleModel;
   // final _textClientControler = TextEditingController();
-  final _textServiceControler = TextEditingController();
+  final _textTaskControler = TextEditingController();
   final _textDateControler = TextEditingController();
   final _textTimeControler = TextEditingController();
   // final _switchFinishController = LabeledSwitchController();
 
-  EditScheduleDialog(this._schedule);
+  EditScheduleDialog(this.scheduleModel);
   
   @override
   Widget build(BuildContext context) {
 
     // _switchFinishController.value = _schedule.isFinish;
-    _textServiceControler.text = _schedule.task;
-    _textDateControler.text = DateTimeHelper.dateToString(_schedule.date);
-    _textTimeControler.text = _schedule.time.format(context);
+    _textTaskControler.text = scheduleModel.task;
+    _textDateControler.text = DateTimeHelper.dateToString(scheduleModel.date);
+    _textTimeControler.text = scheduleModel.time.format(context);
 
     return ListView(
       shrinkWrap: true,
@@ -38,20 +38,10 @@ class EditScheduleDialog extends StatelessWidget {
             children: <Widget>[
               Center(
                 child: Text(
-                  _schedule.client,
+                  scheduleModel.client,
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                 )
               ),
-
-              // SizedBox(
-              //   height: 24,
-              // ),
-              // TextField(
-              //     decoration: InputDecoration(                
-              //       labelText: 'Cliente'
-              //     ),
-              //     controller: _textClientControler
-              // ),
               SizedBox(
                 height: 24,
               ),
@@ -59,7 +49,7 @@ class EditScheduleDialog extends StatelessWidget {
                 decoration: InputDecoration(                
                     labelText: 'Serviço'
                 ),
-                controller: _textServiceControler,
+                controller: _textTaskControler,
               ),
               // SizedBox(height: 12),
               // CustomLabeledSwitch(
@@ -70,9 +60,11 @@ class EditScheduleDialog extends StatelessWidget {
               SizedBox(height: 12),
               CustomDateTimePicker(
                 controller: _textDateControler,
-                date: _schedule.date,
+                date: scheduleModel.date,
               ),
               SizedBox(height: 12),
+
+              //TODO: trocar o time:null para passar o time atual e mostrar pré-selecionado
               CustomTimePicker(
                 controller: _textTimeControler,
                 time: null,
@@ -83,9 +75,16 @@ class EditScheduleDialog extends StatelessWidget {
               ),
               CustomModalActionButton(
                 onClose: () {
-                  Navigator.of(context).pop();
+                  Navigator.of(context).pop(null);
                 },
-                onSave: () {},
+                onSave: () {
+                  //TODO: Verificar se houve de fato alguma alteração. Retornar nula se não houver para não haver acesso ao banco de dados
+                  scheduleModel.task = _textTaskControler.text;
+                  scheduleModel.date = DateTimeHelper.dateFromString(_textDateControler.text);
+                  scheduleModel.time = DateTimeHelper.timeOfDayFromString(_textTimeControler.text);
+                  
+                  Navigator.of(context).pop(scheduleModel);
+                },
               )
             ],
           ),

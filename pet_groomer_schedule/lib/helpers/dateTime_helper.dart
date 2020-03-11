@@ -28,6 +28,18 @@ class DateTimeHelper {
     return DateFormat("dd/MM/yyyy").format(date);
   }
 
+  static DateTime dateFromString(String value) {
+    if (value.isEmpty || value.split("/").length != 3) {
+      return DateTime.now();
+    }
+    
+    return DateTime(
+      int.parse(value.split("/")[2]),
+      int.parse(value.split("/")[1]),
+      int.parse(value.split("/")[0])
+    );
+  }
+
   static DateTime epochToDateTime(int millisecondsEpoch) {
     final date = DateTime.fromMillisecondsSinceEpoch(millisecondsEpoch * 1000);
     return DateTime(date.year, date.month, date.day);
@@ -48,5 +60,19 @@ class DateTimeHelper {
   static TimeOfDay epochToTimeOfDay(int millisecondsEpoch) {
     final date = DateTime.fromMillisecondsSinceEpoch(millisecondsEpoch * 1000);
     return TimeOfDay(hour: date.hour, minute: date.minute);
+  }
+
+  static TimeOfDay timeOfDayFromString(String value) {
+    if (value.isEmpty || value.split(":").length != 2) {
+      return TimeOfDay(
+        hour: 0,
+        minute: 0
+      );
+    }
+    
+    return TimeOfDay(
+      hour:int.parse(value.split(":")[0]),
+      minute: int.parse(value.split(":")[1])
+    );
   }
 }

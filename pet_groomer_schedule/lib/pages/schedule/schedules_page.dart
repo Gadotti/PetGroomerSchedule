@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_mobx/flutter_mobx.dart';
 import 'package:pet_groomer_schedule/controllers/schedule_controller.dart';
 import 'package:pet_groomer_schedule/controllers/schedule_list_controller.dart';
+import 'package:pet_groomer_schedule/models/schedule_model.dart';
 import 'package:pet_groomer_schedule/pages/schedule/edit_options_dialog.dart';
 import 'package:pet_groomer_schedule/pages/schedule/edit_schedule_dialog.dart';
 import 'package:pet_groomer_schedule/repositories/schedule_repository.dart';
@@ -12,19 +13,25 @@ class SchedulePage extends StatelessWidget {
   final DateTime selectedDate;
   final GlobalKey<ScaffoldState> globalScaffoldKey;
   final ScheduleListController scheduleListController;
-  //final List<ScheduleController> scheduleController;
+  final Function addSchedule;
 
-  SchedulePage(this.selectedDate, this.scheduleListController, this.globalScaffoldKey);
+  SchedulePage(
+    this.selectedDate, 
+    this.scheduleListController, 
+    this.globalScaffoldKey,
+    this.addSchedule
+  );
+
+  //TODO: Implementar o esquema de puxar e sugerar para baixo para causar um refresh na tela
 
   @override
   Widget build(BuildContext context) {
     print(' >> build schedule page - date ${selectedDate.day}');
-    //final scheduleListController = ScheduleListController(scheduleController);
 
     return Observer(
       builder: (_) {
         print(' >> items: ${scheduleListController.length}');
-
+        
         if (scheduleListController.length == 0) {
           return Center(
             child: Column(
@@ -36,43 +43,68 @@ class SchedulePage extends StatelessWidget {
             )
           );
         }
-        
-        return ListView.builder(
-          itemCount: scheduleListController.length,
-          padding: const EdgeInsets.all(0),      
-          itemBuilder: (context, index) {
-            return Stack(
-              children: <Widget>[
-                Padding(
-                  padding: const EdgeInsets.only(left: 24.0, right: 24),
-                  child: Row(
-                    children: <Widget>[
-                      _displayStatus(context, index, scheduleListController),
-                      _displayTime(scheduleListController.schedulesList[index].time.format(context)),
-                      _displayTile(context, index, scheduleListController)
-                    ],
-                  ),
-                ),
-                InkResponse(
-                  onTap: () {
-                    scheduleListController.schedulesList[index].isFinish = !scheduleListController.schedulesList[index].isFinish;
-                  },
-                  child: Container(
-                    width: 100,
-                    height: 70,
-                    margin: EdgeInsets.only(top: 15, left: 15),
-                  ),
-                ),
-              ],
-            );
+
+        List<ScheduleController> scheduleControllerList = scheduleListController.schedulesList.toList();
+        scheduleControllerList.sort((a, b) => a.timeDouble.compareTo(b.timeDouble));
+
+        return RefreshIndicator(
+          onRefresh: () async {            
+            final scheduleRepository = ScheduleRepository();
+            final listController = await scheduleRepository.getSchedulesList(selectedDate);
+            scheduleListController.update(listController);
           },
+          child: ListView.builder(
+            itemCount: scheduleListController.length,
+            padding: const EdgeInsets.all(0),      
+            itemBuilder: (context, index) {
+              return Stack(
+                children: <Widget>[
+                  Padding(
+                    padding: const EdgeInsets.only(left: 24.0, right: 24),
+                    child: Observer(
+                      builder: (_) {
+                        return Row(
+                          children: <Widget>[
+                            _displayStatus(context, index, scheduleControllerList),
+                            _displayTime(scheduleControllerList[index].time.format(context)),
+                            _displayTile(context, index, scheduleControllerList)                      
+                          ],
+                        );
+                      },
+                    ),
+                  ),
+                  InkResponse(
+                    onTap: () async {
+                      var schedule = scheduleControllerList[index];
+                      schedule.isFinish = !schedule.isFinish;                      
+                      final rowsAffected = await _scheduleRepository.update(schedule);
+
+                      if (rowsAffected <= 0) {
+                        globalScaffoldKey.currentState.showSnackBar(
+                          SnackBar(
+                            duration: Duration(seconds: 2),
+                            content: Text('Erro ao realizar atualização!')
+                          )
+                        ); 
+                      }
+                    },
+                    child: Container(
+                      width: 100,
+                      height: 70,
+                      margin: EdgeInsets.only(top: 15, left: 15),
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
         );
       },
     );
   }
 
-  Widget _displayTile(BuildContext _mainContext, int index, ScheduleListController scheduleListController) {    
-    ScheduleController schedule = scheduleListController.schedulesList[index];
+  Widget _displayTile(BuildContext _mainContext, int index, List<ScheduleController> scheduleControllerList) {  
+    ScheduleController schedule = scheduleControllerList[index];
 
     Future<void> _deleteSchedule(ScheduleController schedule) async {
       final rowsAffected = await _scheduleRepository.delete(schedule.id);
@@ -116,8 +148,12 @@ class SchedulePage extends StatelessWidget {
               );
             });
         },
-        onTap: () {
-          showDialog(
+        onTap: () async {
+          var dateBefore = schedule.date;
+          // var timeBefore = schedule.time;
+          // var taskBefore = schedule.task;
+
+          var scheduleModel = await showDialog<ScheduleModel>(
             barrierDismissible: false,
             context: _mainContext,
             builder: (BuildContext context) {
@@ -128,6 +164,30 @@ class SchedulePage extends StatelessWidget {
                   )
               );
             });
+
+            if (scheduleModel != null) {
+              
+              final rowsAffected = await _scheduleRepository.update(scheduleModel);
+              if (rowsAffected <= 0) {
+                globalScaffoldKey.currentState.showSnackBar(
+                  SnackBar(
+                    duration: Duration(seconds: 2),
+                    content: Text('Erro ao realizar atualização!')
+                  )
+                ); 
+              } else {
+                if (dateBefore != scheduleModel.date) {
+                  scheduleListController.delete(schedule);
+                  addSchedule(scheduleModel);
+                } 
+                // else {
+                //   if (timeBefore != scheduleModel.time ||
+                //       taskBefore != scheduleModel.task) {
+                //       print('>>> vai passar aqui');
+                //   }
+                // }
+              }             
+            }
         },
         child: Padding(
           padding: const EdgeInsets.only(top: 12.0, bottom: 12.0),
@@ -144,7 +204,7 @@ class SchedulePage extends StatelessWidget {
                 ]),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
+              children: <Widget>[                
                 Text(schedule.client),
                 SizedBox(
                   height: 12,
@@ -168,9 +228,9 @@ class SchedulePage extends StatelessWidget {
     );
   }
 
-  Widget _displayStatus(BuildContext context, int index, ScheduleListController scheduleListController) {
-    int listLength = scheduleListController.length;
-    ScheduleController schedule = scheduleListController.schedulesList[index];
+  Widget _displayStatus(BuildContext context, int index, List<ScheduleController> scheduleControllerList) {
+    int listLength = scheduleControllerList.length;
+    ScheduleController schedule = scheduleControllerList[index];
     
     return Container(
         decoration: CustomIconDecoration(

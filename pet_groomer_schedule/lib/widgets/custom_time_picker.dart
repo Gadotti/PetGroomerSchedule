@@ -11,14 +11,6 @@ class CustomTimePicker extends StatelessWidget {
   });
 
   Future _pickTime(BuildContext context) async {
-    //  DatePicker.showTimePicker(context,  
-    //         showTitleActions: true,  
-    //             onChanged: (date) {  
-    //              print('change $date');  
-    //         }, onConfirm: (date) {  
-    //              print('confirm $date');  
-    //         }, currentTime: DateTime.now(), locale: LocaleType.pt);
-
     TimeOfDay timepick = await showTimePicker(
       context: context, 
       initialTime: time ?? TimeOfDay.now()

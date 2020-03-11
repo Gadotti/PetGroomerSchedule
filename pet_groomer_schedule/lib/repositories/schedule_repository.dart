@@ -24,7 +24,7 @@ class ScheduleRepository {
     return schduleList;
   }
 
-  Future<int> insert(ScheduleController schedule) async {
+  Future<int> insert(ScheduleModel schedule) async {
     final db = await CustomDatabaseFactory().db;
     return await db.insert(ScheduleModel.tableName, schedule.toMap());
   }
@@ -35,6 +35,16 @@ class ScheduleRepository {
       ScheduleModel.tableName,
       where: "${ScheduleModel.idColumn} = ?",
       whereArgs: [id]
+    );
+  }
+
+  Future<int> update(ScheduleModel scheduleModel) async {
+    final db = await CustomDatabaseFactory().db;
+    return await db.update(
+      ScheduleModel.tableName, 
+      scheduleModel.toMap(),
+      where: "${ScheduleModel.idColumn} = ?",
+      whereArgs: [scheduleModel.id]
     );
   }
 }

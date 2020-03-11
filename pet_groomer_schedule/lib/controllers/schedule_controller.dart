@@ -12,7 +12,7 @@ part 'schedule_controller.g.dart';
 
 class ScheduleController = ScheduleControllerBase with _$ScheduleController;
 
-abstract class ScheduleControllerBase extends ScheduleModel with Store  {
+abstract class ScheduleControllerBase extends ScheduleModel with Store {
 
   @observable
   @override
@@ -38,6 +38,8 @@ abstract class ScheduleControllerBase extends ScheduleModel with Store  {
   @override
   bool isFinish;
 
+  double get timeDouble => time == null ? 0.0 : time.hour + time.minute/60.0;
+  
   ScheduleControllerBase({
     @required this.id, 
     @required this.date, 
@@ -45,7 +47,13 @@ abstract class ScheduleControllerBase extends ScheduleModel with Store  {
     @required this.client, 
     @required this.task, 
     @required this.isFinish
-  }) : super(id, date, time, client, task, isFinish);
+  }) : super(
+    id: id, 
+    date: date, 
+    time: time,
+    client: client, 
+    task: task, 
+    isFinish: isFinish);
   
   @action 
   setDate(DateTime value) => date = value;
@@ -62,6 +70,15 @@ abstract class ScheduleControllerBase extends ScheduleModel with Store  {
   @action 
   setIsFinish(bool value) => isFinish = value;
 
+  @action
+  update(ScheduleModel scheduleModel) {
+    date = scheduleModel.date;
+    time = scheduleModel.time;
+    client = scheduleModel.client;
+    task = scheduleModel.task;
+    isFinish = scheduleModel.isFinish;
+  }
+
   static ScheduleController fromMap(Map map) {    
     return ScheduleController(
       id: map[ScheduleModel.idColumn],
@@ -73,24 +90,15 @@ abstract class ScheduleControllerBase extends ScheduleModel with Store  {
     );
   }
 
-  Map toMap() {
-    print(' >> Está salvando esta data: ${DateTimeHelper.dateTimeToEpoch(date)}.');    
-    print(' >> Original dia: ${date.day}.');    
-    print(' >> Convertido dia: ${DateTimeHelper.epochToDateTime(DateTimeHelper.dateTimeToEpoch(date)).day}.');    
-    print(' >> id $id.');  
-    
-    Map<String, dynamic> map = {
-      ScheduleModel.dateColumn: DateTimeHelper.dateTimeToEpoch(date),
-      ScheduleModel.timeColumn: DateTimeHelper.timeOfDayToEpoch(time),
-      ScheduleModel.clientColumn: client,
-      ScheduleModel.taskColumn: task,
-      ScheduleModel.isFinishColumn: isFinish ? 1 : 0
-    };
+  static ScheduleController fromModel(ScheduleModel model) {    
+    return ScheduleController(
+      id: model.id,
+      date: model.date,
+      time: model.time,
+      client: model.client,
+      task: model.task,
+      isFinish: model.isFinish,
+    );
+  }
 
-    if (id != null) {
-      map[ScheduleModel.idColumn] = id;
-    }
-
-    return map;
-  }  
 }
