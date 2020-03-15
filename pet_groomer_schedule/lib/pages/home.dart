@@ -6,6 +6,7 @@ import 'package:pet_groomer_schedule/controllers/schedule_list_controller.dart';
 import 'package:pet_groomer_schedule/controllers/selected_date_controller.dart';
 import 'package:pet_groomer_schedule/helpers/dateTime_helper.dart';
 import 'package:pet_groomer_schedule/models/schedule_model.dart';
+import 'package:pet_groomer_schedule/pages/delete_all_dialog.dart';
 import 'package:pet_groomer_schedule/pages/schedule/new_schedule_dialog.dart';
 import 'package:pet_groomer_schedule/pages/schedule/schedules_page.dart';
 import 'package:pet_groomer_schedule/repositories/schedule_repository.dart';
@@ -143,9 +144,45 @@ class Home extends StatelessWidget {
               icon: Icon(Icons.settings),
               onPressed: () {},
             ),
-            IconButton(
+            PopupMenuButton<int>(
+              onSelected: (value) async {
+                switch (value) {
+                  case 1:
+                    var result = await showDialog(
+                      barrierDismissible: false,
+                      context: context,
+                      builder: (BuildContext context) {
+                        return Dialog(
+                            child: DeleteAllDialog(),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.all(Radius.circular(12))
+                            )
+                        );
+                      }
+                    );
+
+                    if (result) {
+                      var rowsAffected = await _scheduleRepository.deleteAll();
+
+                      if (rowsAffected > 0) {
+                        _rebuildWithSelectedDate(DateTime.now());
+                        _showSnackbar('Agendamentos excluídos com sucesso');
+                      } else {
+                        _showSnackbar('Ops! Não foi possível realizar a exclusão');
+                      }                      
+                    }
+                    break;
+                  default:
+                }
+              },
+              itemBuilder: (context) => [
+                PopupMenuItem(
+                  value: 1,
+                  child: Text("Exlcuir tudo"),
+                ),
+              ],
               icon: Icon(Icons.more_vert),
-              onPressed: () {},
+              offset: Offset(0, -70),
             )
           ],
         ),
@@ -242,7 +279,13 @@ class Home extends StatelessWidget {
       ),
     );
   }
-  
-  
 
+  void _showSnackbar(String message) {
+    _globalScaffoldKey.currentState.showSnackBar(
+      SnackBar(
+        duration: Duration(seconds: 2),
+        content: Text(message)
+      )
+    ); 
+  }
 }

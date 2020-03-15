@@ -22,8 +22,6 @@ class SchedulePage extends StatelessWidget {
     this.addSchedule
   );
 
-  //TODO: Implementar o esquema de puxar e sugerar para baixo para causar um refresh na tela
-
   @override
   Widget build(BuildContext context) {
     print(' >> build schedule page - date ${selectedDate.day}');
@@ -112,23 +110,22 @@ class SchedulePage extends StatelessWidget {
       if (rowsAffected > 0) {
         scheduleListController.delete(schedule);
         
-        globalScaffoldKey.currentState.showSnackBar(
-          SnackBar(
-            duration: Duration(seconds: 2),
-            content: Text('Agendamento excluído!'),
-            action: SnackBarAction(
-              label: 'Desfazer',
-              onPressed: () {}, 
-            ),
-          )
+        final snackBarAction = SnackBarAction(
+          label: 'Desfazer',
+          onPressed: () async {
+            schedule.id = null;
+            final rowsAffected = await _scheduleRepository.insert(schedule);
+            if (rowsAffected > 0) {
+              scheduleListController.add(schedule);
+            } else {
+              _showSnackbar('Ops! Não foi possível desfazer =/');
+            }            
+          }, 
         );
+
+        _showSnackBarWithAction('Agendamento excluído!', snackBarAction);        
       } else {
-        globalScaffoldKey.currentState.showSnackBar(
-          SnackBar(
-            duration: Duration(seconds: 2),
-            content: Text('Erro ao realizar exclusão!')
-          )
-        ); 
+        _showSnackbar('Erro ao realizar exclusão!');        
       }
     }
 
@@ -146,12 +143,11 @@ class SchedulePage extends StatelessWidget {
                       borderRadius: BorderRadius.all(Radius.circular(12))
                   )
               );
-            });
+            }
+          );
         },
         onTap: () async {
           var dateBefore = schedule.date;
-          // var timeBefore = schedule.time;
-          // var taskBefore = schedule.task;
 
           var scheduleModel = await showDialog<ScheduleModel>(
             barrierDismissible: false,
@@ -180,12 +176,6 @@ class SchedulePage extends StatelessWidget {
                   scheduleListController.delete(schedule);
                   addSchedule(scheduleModel);
                 } 
-                // else {
-                //   if (timeBefore != scheduleModel.time ||
-                //       taskBefore != scheduleModel.task) {
-                //       print('>>> vai passar aqui');
-                //   }
-                // }
               }             
             }
         },
@@ -262,5 +252,24 @@ class SchedulePage extends StatelessWidget {
           ),
         )
     );
+  }
+
+  void _showSnackBarWithAction(String message, SnackBarAction action) {
+    globalScaffoldKey.currentState.showSnackBar(
+      SnackBar(
+        duration: Duration(seconds: 2),
+        content: Text(message),
+        action: action,
+      )
+    );
+  }
+
+  void _showSnackbar(String message) {
+    globalScaffoldKey.currentState.showSnackBar(
+      SnackBar(
+        duration: Duration(seconds: 2),
+        content: Text(message)
+      )
+    ); 
   }
 }

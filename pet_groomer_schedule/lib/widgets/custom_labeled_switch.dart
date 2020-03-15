@@ -23,7 +23,6 @@ class CustomLabeledSwitch extends StatelessWidget {
     return InkWell(
       customBorder: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(4))),
       onTap: () {
-        print('>> tap ${!controller.value}');
         controller.changeValue(!controller.value);
       },
       child: Padding(
@@ -45,7 +44,6 @@ class CustomLabeledSwitch extends StatelessWidget {
                 return Switch(
                   value: controller.value,
                   onChanged: (bool newValue) {
-                    print('>> changed $newValue');
                     controller.value = newValue;
                   },              
                 );

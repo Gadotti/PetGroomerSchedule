@@ -38,6 +38,13 @@ class ScheduleRepository {
     );
   }
 
+  Future<int> deleteAll() async {
+    final db = await CustomDatabaseFactory().db;
+    return await db.delete(
+      ScheduleModel.tableName
+    );
+  }
+
   Future<int> update(ScheduleModel scheduleModel) async {
     final db = await CustomDatabaseFactory().db;
     return await db.update(

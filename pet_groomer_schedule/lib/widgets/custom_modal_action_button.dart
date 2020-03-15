@@ -18,7 +18,7 @@ class CustomModalActionButton extends StatelessWidget {
           buttonText: 'Fechar',
         ),
         CustomButtonRaised(
-          onPressed: onSave,
+          onPressed: onSave,          
           buttonText: 'Salvar',          
         )
       ],

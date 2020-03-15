@@ -17,15 +17,6 @@ class EditOptionsDialog extends StatelessWidget {
           SizedBox(
             width: double.infinity,
             child: FlatButton(
-              onPressed: () {},
-              textColor: Theme.of(context).accentColor,
-              child: Text('Editar'),
-            ),
-          ),
-          SizedBox(height: 15),
-          SizedBox(
-            width: double.infinity,
-            child: FlatButton(
               onPressed: () {
                 Navigator.of(context).pop();
                 onDelete(_schedule);
