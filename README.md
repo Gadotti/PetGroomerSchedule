@@ -2,7 +2,7 @@
 Mobile app construído em Flutter com objetivo de manter o agendamento de serviços para clientes. A solução foi idealizada pensando em um modelo de negócio para banho & tosa canina, mas é facilmente utilizada em outros modelos de negócio.
 
 #### Quickstart para Flutter
-> https://github.com/Gadotti/
+> https://github.com/Gadotti/FlutterExamples
 
 ## Gerencimento de estado
 No Flutter existe a opção de manter os estados auto gerenciados através de componente Statefull, porém nem sempre é o que desejamos, já que isto pode trazer processamento desnecessário ou acessos excessivos à base dados, que representa custo direto para o desenvolvedor.
